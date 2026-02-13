@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Διαχείριση Συλλογής - Rose Flower Shop</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        rose: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            200: '#fecdd3',
+                            600: '#e11d48',
+                            700: '#be123c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        /* Staggered animation delays */
+        .stagger-1 { animation-delay: 0.05s; opacity: 0; }
+        .stagger-2 { animation-delay: 0.10s; opacity: 0; }
+        .stagger-3 { animation-delay: 0.15s; opacity: 0; }
+        .stagger-4 { animation-delay: 0.20s; opacity: 0; }
+        .stagger-5 { animation-delay: 0.25s; opacity: 0; }
+        .stagger-6 { animation-delay: 0.30s; opacity: 0; }
+        
+        /* Delete overlay */
+        .delete-overlay {
+            transition: opacity 0.3s ease;
+        }
+        
+        .image-card:hover .delete-overlay {
+            opacity: 1 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
+
+    <!-- Navbar -->
+    <header class="bg-white shadow-sm sticky top-0 z-50" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="index.html" class="flex items-center space-x-2">
+                        <span class="text-2xl font-serif font-bold text-rose-600">Rose</span>
+                        <span class="text-xl font-light text-gray-600">Flower Shop</span>
+                    </a>
+                </div>
+                
+                <nav class="hidden md:flex space-x-8 items-center">
+                    <a href="index.html" class="text-gray-700 hover:text-rose-600 transition font-medium">Αρχική</a>
+                    <a href="about.html" class="text-gray-700 hover:text-rose-600 transition font-medium">Σχετικά</a>
+                    <a href="services.html" class="text-gray-700 hover:text-rose-600 transition font-medium">Υπηρεσίες</a>
+                    <a href="gallery.html" class="text-gray-700 hover:text-rose-600 transition font-medium">Συλλογή</a>
+                    <a href="contact.html" class="text-gray-700 hover:text-rose-600 transition font-medium">Επικοινωνία</a>
+                    
+                    <button id="logout-btn" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                        Αποσύνδεση
+                    </button>
+                </nav>
+
+                <button id="mobile-menu-button" class="md:hidden text-gray-600 hover:text-rose-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="index.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-gray-50">Αρχική</a>
+                <a href="about.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-gray-50">Σχετικά</a>
+                <a href="services.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-gray-50">Υπηρεσίες</a>
+                <a href="gallery.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-gray-50">Συλλογή</a>
+                <a href="contact.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-gray-50">Επικοινωνία</a>
+                <button id="logout-btn-mobile" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-rose-600 hover:bg-gray-50">Αποσύνδεση</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="admin.html" class="inline-flex items-center text-gray-600 hover:text-rose-600 transition mb-4">
+                <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
+                Πίσω στη Διαχείριση
+            </a>
+            
+            <h1 class="text-4xl font-serif font-bold text-gray-900 mb-2">Διαχείριση Συλλογής</h1>
+            <p class="text-gray-600">Προσθέστε ή αφαιρέσετε εικόνες από τη συλλογή σας</p>
+        </div>
+
+        <!-- Category Selection & Upload Area -->
+        <div class="bg-rose-50 rounded-2xl p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Category Select -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Κατηγορία</label>
+                    <select id="category-select" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition">
+                        <option value="Weddings">Γάμοι</option>
+                        <option value="Baptisms">Βαπτίσεις</option>
+                        <option value="Events">Εκδηλώσεις</option>
+                        <option value="Bouquets">Μπουκέτα</option>
+                    </select>
+                </div>
+
+                <!-- Image Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ανέβασμα Εικόνων</label>
+                    <label class="flex items-center justify-center px-6 py-3 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors cursor-pointer">
+                        <i data-lucide="upload" class="w-5 h-5 mr-2"></i>
+                        <span id="upload-text">Επιλογή Εικόνων</span>
+                        <input type="file" id="file-input" class="hidden" multiple accept="image/*">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Images Grid -->
+        <div id="images-container">
+            <!-- Loading spinner -->
+            <div id="loading-spinner" class="hidden flex justify-center items-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600"></div>
+            </div>
+
+            <!-- Empty state -->
+            <div id="empty-state" class="hidden bg-gray-50 rounded-2xl p-12 text-center">
+                <i data-lucide="image" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+                <p class="text-gray-600">Δεν υπάρχουν εικόνες σε αυτή την κατηγορία</p>
+            </div>
+
+            <!-- Images grid -->
+            <div id="images-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </div>
+
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- JavaScript -->
+    <script>
+        // ========================================
+        // AUTHENTICATION CHECK
+        // ========================================
+        
+        function checkAuth() {
+            const isAuth = sessionStorage.getItem('admin_auth');
+            if (isAuth !== 'true') {
+                window.location.href = 'admin.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Check auth on page load
+        if (!checkAuth()) {
+            // Redirect handled in checkAuth
+        }
+
+        // ========================================
+        // UTILITY FUNCTIONS
+        // ========================================
+        
+        function generateId() {
+            return 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast px-6 py-4 rounded-lg shadow-lg text-white ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+            toast.textContent = message;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ========================================
+        // LOCAL STORAGE OPERATIONS
+        // ========================================
+        
+        function getGalleryImages() {
+            const data = localStorage.getItem('galleryImages');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function setGalleryImages(images) {
+            localStorage.setItem('galleryImages', JSON.stringify(images));
+        }
+
+        function initializeMockData() {
+            const existing = getGalleryImages();
+            if (existing.length === 0) {
+                // Initialize with mock data
+                const mockImages = [
+                    {
+                        id: generateId(),
+                        created_date: new Date().toISOString(),
+                        updated_date: new Date().toISOString(),
+                        created_by: 'admin@example.com',
+                        category: 'Weddings',
+                        image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=500',
+                        order: 0
+                    },
+                    {
+                        id: generateId(),
+                        created_date: new Date().toISOString(),
+                        updated_date: new Date().toISOString(),
+                        created_by: 'admin@example.com',
+                        category: 'Weddings',
+                        image_url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=500',
+                        order: 1
+                    },
+                    {
+                        id: generateId(),
+                        created_date: new Date().toISOString(),
+                        updated_date: new Date().toISOString(),
+                        created_by: 'admin@example.com',
+                        category: 'Baptisms',
+                        image_url: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=500',
+                        order: 0
+                    },
+                    {
+                        id: generateId(),
+                        created_date: new Date().toISOString(),
+                        updated_date: new Date().toISOString(),
+                        created_by: 'admin@example.com',
+                        category: 'Bouquets',
+                        image_url: 'https://images.unsplash.com/photo-1455659817273-f96807779a8a?w=500',
+                        order: 0
+                    }
+                ];
+                setGalleryImages(mockImages);
+            }
+        }
+
+        // ========================================
+        // RENDER FUNCTIONS
+        // ========================================
+        
+        function renderImages() {
+            const category = document.getElementById('category-select').value;
+            const allImages = getGalleryImages();
+            const filteredImages = allImages.filter(img => img.category === category);
+            
+            const grid = document.getElementById('images-grid');
+            const emptyState = document.getElementById('empty-state');
+            
+            if (filteredImages.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                
+                grid.innerHTML = filteredImages.map((image, index) => `
+                    <div class="image-card relative aspect-square rounded-xl overflow-hidden shadow-lg fade-in stagger-${(index % 6) + 1} group">
+                        <img src="${image.image_url}" alt="Gallery Image" class="w-full h-full object-cover">
+                        
+                        <!-- Delete Overlay -->
+                        <div class="delete-overlay absolute inset-0 bg-black/50 opacity-0 flex items-center justify-center">
+                            <button 
+                                onclick="deleteImage('${image.id}')" 
+                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2"
+                            >
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                <span>Διαγραφή</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Re-initialize Lucide icons
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        // ========================================
+        // IMAGE UPLOAD
+        // ========================================
+        
+        function handleFileUpload(event) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+            
+            const category = document.getElementById('category-select').value;
+            const uploadText = document.getElementById('upload-text');
+            
+            uploadText.textContent = 'Ανέβασμα...';
+            
+            // Process each file
+            let processed = 0;
+            const allImages = getGalleryImages();
+            
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Create new image object
+                    const newImage = {
+                        id: generateId(),
+                        created_date: new Date().toISOString(),
+                        updated_date: new Date().toISOString(),
+                        created_by: 'admin@example.com',
+                        category: category,
+                        image_url: e.target.result, // data URL
+                        order: allImages.filter(img => img.category === category).length + index
+                    };
+                    
+                    allImages.push(newImage);
+                    processed++;
+                    
+                    // When all files are processed
+                    if (processed === files.length) {
+                        setGalleryImages(allImages);
+                        renderImages();
+                        uploadText.textContent = 'Επιλογή Εικόνων';
+                        showToast(`${files.length} εικόνες ανέβηκαν επιτυχώς`, 'success');
+                        
+                        // Clear file input
+                        event.target.value = '';
+                    }
+                };
+                
+                reader.onerror = function() {
+                    showToast('Κάτι πήγε στραβά κατά την ανέβασμα', 'error');
+                    uploadText.textContent = 'Επιλογή Εικόνων';
+                };
+                
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ========================================
+        // DELETE IMAGE
+        // ========================================
+        
+        function deleteImage(imageId) {
+            if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την εικόνα;')) {
+                return;
+            }
+            
+            const allImages = getGalleryImages();
+            const updatedImages = allImages.filter(img => img.id !== imageId);
+            
+            setGalleryImages(updatedImages);
+            renderImages();
+            showToast('Η εικόνα διαγράφηκε επιτυχώς', 'success');
+        }
+
+        // Make deleteImage globally accessible
+        window.deleteImage = deleteImage;
+
+        // ========================================
+        // EVENT LISTENERS
+        // ========================================
+        
+        // Category change
+        document.getElementById('category-select').addEventListener('change', renderImages);
+
+        // File upload
+        document.getElementById('file-input').addEventListener('change', handleFileUpload);
+
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+
+        // Logout buttons
+        function handleLogout() {
+            sessionStorage.removeItem('admin_auth');
+            sessionStorage.removeItem('admin_user');
+            window.location.href = 'admin.html';
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('logout-btn-mobile').addEventListener('click', handleLogout);
+
+        // ========================================
+        // INITIALIZE
+        // ========================================
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            initializeMockData();
+            renderImages();
+            
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>
