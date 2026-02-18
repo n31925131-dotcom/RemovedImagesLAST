@@ -241,51 +241,7 @@
             localStorage.setItem('galleryImages', JSON.stringify(images));
         }
 
-        function initializeMockData() {
-            const existing = getGalleryImages();
-            if (existing.length === 0) {
-                // Initialize with mock data
-                const mockImages = [
-                    {
-                        id: generateId(),
-                        created_date: new Date().toISOString(),
-                        updated_date: new Date().toISOString(),
-                        created_by: 'admin@example.com',
-                        category: 'Weddings',
-                        image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=500',
-                        order: 0
-                    },
-                    {
-                        id: generateId(),
-                        created_date: new Date().toISOString(),
-                        updated_date: new Date().toISOString(),
-                        created_by: 'admin@example.com',
-                        category: 'Weddings',
-                        image_url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=500',
-                        order: 1
-                    },
-                    {
-                        id: generateId(),
-                        created_date: new Date().toISOString(),
-                        updated_date: new Date().toISOString(),
-                        created_by: 'admin@example.com',
-                        category: 'Baptisms',
-                        image_url: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=500',
-                        order: 0
-                    },
-                    {
-                        id: generateId(),
-                        created_date: new Date().toISOString(),
-                        updated_date: new Date().toISOString(),
-                        created_by: 'admin@example.com',
-                        category: 'Bouquets',
-                        image_url: 'https://images.unsplash.com/photo-1455659817273-f96807779a8a?w=500',
-                        order: 0
-                    }
-                ];
-                setGalleryImages(mockImages);
-            }
-        }
+  
 
         // ========================================
         // RENDER FUNCTIONS
@@ -332,26 +288,28 @@
         // ========================================
         // IMAGE UPLOAD
         // ========================================
-        
-      // ========================================
-// IMAGE UPLOAD TO SERVER
+
+// ========================================
+// IMAGE UPLOAD TO CLOUDINARY
 // ========================================
 
-async function uploadFile(file, category) {
+async function uploadToCloudinary(file) {
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('file', file);
+    formData.append('upload_preset', 'flower_shop_preset');   // ← replace with your preset
 
-    const response = await fetch('upload.php', {
+    const response = await fetch(`https://api.cloudinary.com/v1_1/dopmj1ksm/image/upload`, {
         method: 'POST',
         body: formData
     });
 
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Upload failed');
+        throw new Error(error.error.message || 'Upload failed');
     }
 
-    return await response.json(); // returns { success: true, file_path: 'images/...' }
+    const result = await response.json();
+    return result.secure_url; // the public URL of the uploaded image
 }
 
 function handleFileUpload(event) {
@@ -363,44 +321,42 @@ function handleFileUpload(event) {
     const originalText = uploadText.textContent;
 
     uploadText.textContent = 'Ανέβασμα...';
-    uploadText.disabled = true; // optional, but can add a disabled class
+    // Optionally disable the upload button (you can add a disabled style)
 
     let uploadedCount = 0;
     const allImages = getGalleryImages();
 
-    // Process files one by one
     Array.from(files).forEach(async (file) => {
         try {
-            const result = await uploadFile(file, category);
-            // Create new image object with the server path
+            const imageUrl = await uploadToCloudinary(file);
             const newImage = {
                 id: generateId(),
                 created_date: new Date().toISOString(),
                 updated_date: new Date().toISOString(),
                 created_by: 'admin@example.com',
                 category: category,
-                image_url: result.file_path,  // relative path, e.g., "images/img_123.jpg"
+                image_url: imageUrl,
                 order: allImages.filter(img => img.category === category).length + uploadedCount
             };
             allImages.push(newImage);
             uploadedCount++;
 
-            // Update after each file (or you can wait until all done)
             setGalleryImages(allImages);
             renderImages();
 
             if (uploadedCount === files.length) {
                 uploadText.textContent = originalText;
-                uploadText.disabled = false;
                 showToast(`${files.length} εικόνες ανέβηκαν επιτυχώς`, 'success');
                 event.target.value = ''; // clear input
             }
         } catch (error) {
             console.error(error);
-            showToast('Σφάλμα κατά το ανέβασμα: ' + error.message, 'error');
-            // Still try to continue with other files? You may decide to stop.
-            uploadText.textContent = originalText;
-            uploadText.disabled = false;
+            showToast('Σφάλμα: ' + error.message, 'error');
+            uploadedCount++;
+            if (uploadedCount === files.length) {
+                uploadText.textContent = originalText;
+                event.target.value = '';
+            }
         }
     });
 }
